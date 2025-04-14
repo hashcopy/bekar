@@ -1,36 +1,32 @@
 Title:
-Broken Audit Integrity: User Can Modify EntryUser Field and Tamper Audit Trail
+Improper Input Handling: Special Character in SOAP Request Triggers Verbose Error Message
 
 Description:
-The application allows a user to modify the entryUser field when performing certain actions. This field, which is expected to represent the actual authenticated user performing the action, is being taken from client-side input rather than being set securely on the server side. As a result, any user can impersonate another user in the audit trail by modifying this field, leading to false attribution of actions and compromising the reliability of logs.
+The application fails to properly handle special characters in SOAP request input. When the ampersand (&) character is included in the request payload, the application throws a verbose error message, exposing internal implementation details such as stack traces, server file paths, or underlying framework errors. This indicates insufficient input validation and improper error handling.
 
 Impact:
-Audit Trail Tampering: Malicious users can mislead investigators or administrators by falsifying who performed an action.
+Information Disclosure: Verbose error messages can reveal internal server paths, code structure, libraries in use, or logic flow.
 
-Accountability Loss: The system can no longer reliably identify users responsible for changes or activities.
+Reconnaissance Aid: Attackers can gather valuable information to craft targeted attacks or exploit deeper vulnerabilities.
 
-Potential for Insider Threat Cover-Up: A user could perform malicious actions while attributing them to another legitimate user, avoiding detection.
+Denial of Service Potential: Improperly handled characters may be abused to affect application stability or parsing mechanisms.
 
 Steps to Reproduce:
-Log in as a valid user (e.g., User A).
+Intercept a valid SOAP request using Burp Suite or another proxy tool.
 
-Perform an action that triggers an audit trail entry (e.g., creating or updating a record).
+In the request body (typically inside a parameter), inject the ampersand character (&) — e.g., <username>admin&</username>.
 
-Intercept the request using a proxy like Burp Suite.
+Forward the request.
 
-Locate the entryUser or similar field in the request payload.
+Observe the response — the application throws a verbose error message instead of a generic error or sanitized response.
 
-Modify the value to another username or arbitrary string (e.g., "admin", "superuser", or even an emoji).
-
-Forward the request and observe the response.
-
-Check the audit logs or history UI—notice that the action is attributed to the spoofed entryUser value.
+Note any stack traces, file paths, or internal code references revealed in the response.
 
 Remediation:
-Remove any client-supplied entryUser or similar fields from trust.
+Sanitize and Validate Inputs: Ensure special characters are properly encoded or rejected before processing.
 
-On the server side, always set the acting user’s name from the authenticated session or token.
+Implement Generic Error Handling: Avoid exposing raw server errors; instead, return a user-friendly, generic message (e.g., "Invalid request").
 
-Sanitize and validate all audit log inputs.
+Disable Verbose Error Display in Production: Ensure detailed error logs are only visible internally or in logs—not in user-facing responses.
 
-Ensure audit mechanisms are tamper-proof and trustworthy.
+Let me know if you’d like to bundle this in a complete report with all your findings or convert it for bug bounty or client delivery.
