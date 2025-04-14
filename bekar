@@ -1,36 +1,36 @@
 Title:
-Broken Access Control: User Can View and Modify Other Users' Search Preferences
+Broken Audit Integrity: User Can Modify EntryUser Field and Tamper Audit Trail
 
 Description:
-The application fails to properly enforce access controls on user-specific preferences. As a result, an authenticated user is able to view, remove, and set new search preferences for other users by manipulating identifiers or request parameters. This allows unauthorized actions on behalf of other users and violates data integrity and privacy.
+The application allows a user to modify the entryUser field when performing certain actions. This field, which is expected to represent the actual authenticated user performing the action, is being taken from client-side input rather than being set securely on the server side. As a result, any user can impersonate another user in the audit trail by modifying this field, leading to false attribution of actions and compromising the reliability of logs.
 
 Impact:
-Privacy Violation: A user can access search preferences that may contain sensitive or personal information about other users.
+Audit Trail Tampering: Malicious users can mislead investigators or administrators by falsifying who performed an action.
 
-Data Integrity Risk: A user can maliciously alter or delete another user’s preferences, potentially affecting their experience or workflow.
+Accountability Loss: The system can no longer reliably identify users responsible for changes or activities.
 
-Potential for Further Exploitation: This weakness could be leveraged to target specific users by modifying their settings repeatedly or in a disruptive manner.
+Potential for Insider Threat Cover-Up: A user could perform malicious actions while attributing them to another legitimate user, avoiding detection.
 
 Steps to Reproduce:
-Log in as a regular user (User A).
+Log in as a valid user (e.g., User A).
 
-Set your own search preference and note the request being sent (e.g., a POST or PUT request with your user ID or token).
+Perform an action that triggers an audit trail entry (e.g., creating or updating a record).
 
-Intercept the request using a proxy (like Burp Suite).
+Intercept the request using a proxy like Burp Suite.
 
-Modify the request to include the user ID or identifier of another user (User B).
+Locate the entryUser or similar field in the request payload.
 
-Observe that the preference for User B can be viewed, modified, or deleted.
+Modify the value to another username or arbitrary string (e.g., "admin", "superuser", or even an emoji).
 
-Verify the change by logging in as User B or checking their account if accessible.
+Forward the request and observe the response.
+
+Check the audit logs or history UI—notice that the action is attributed to the spoofed entryUser value.
 
 Remediation:
-Implement proper access control checks on all endpoints dealing with user-specific data.
+Remove any client-supplied entryUser or similar fields from trust.
 
-Validate that the authenticated user can only access or modify their own preferences.
+On the server side, always set the acting user’s name from the authenticated session or token.
 
-Use secure session or token-based identifiers rather than user-controllable parameters to identify users.
+Sanitize and validate all audit log inputs.
 
-Apply the Principle of Least Privilege (PoLP) in backend logic to prevent unauthorized data access.
-
-Let me know if you want this formatted like a bug bounty submission, Jira ticket, or vulnerability report for a client.
+Ensure audit mechanisms are tamper-proof and trustworthy.
