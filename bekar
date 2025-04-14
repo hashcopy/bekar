@@ -1,0 +1,36 @@
+Title:
+Broken Access Control: User Can View and Modify Other Users' Search Preferences
+
+Description:
+The application fails to properly enforce access controls on user-specific preferences. As a result, an authenticated user is able to view, remove, and set new search preferences for other users by manipulating identifiers or request parameters. This allows unauthorized actions on behalf of other users and violates data integrity and privacy.
+
+Impact:
+Privacy Violation: A user can access search preferences that may contain sensitive or personal information about other users.
+
+Data Integrity Risk: A user can maliciously alter or delete another user’s preferences, potentially affecting their experience or workflow.
+
+Potential for Further Exploitation: This weakness could be leveraged to target specific users by modifying their settings repeatedly or in a disruptive manner.
+
+Steps to Reproduce:
+Log in as a regular user (User A).
+
+Set your own search preference and note the request being sent (e.g., a POST or PUT request with your user ID or token).
+
+Intercept the request using a proxy (like Burp Suite).
+
+Modify the request to include the user ID or identifier of another user (User B).
+
+Observe that the preference for User B can be viewed, modified, or deleted.
+
+Verify the change by logging in as User B or checking their account if accessible.
+
+Remediation:
+Implement proper access control checks on all endpoints dealing with user-specific data.
+
+Validate that the authenticated user can only access or modify their own preferences.
+
+Use secure session or token-based identifiers rather than user-controllable parameters to identify users.
+
+Apply the Principle of Least Privilege (PoLP) in backend logic to prevent unauthorized data access.
+
+Let me know if you want this formatted like a bug bounty submission, Jira ticket, or vulnerability report for a client.
