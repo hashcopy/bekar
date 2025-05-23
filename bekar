@@ -1,0 +1,78 @@
+Title: Exposure of Sensitive User Data via Pendo Integration
+Description:
+During security assessment, it was observed that the application’s integration with Pendo—a product analytics and user behavior tracking tool—is leaking sensitive user data. The data is being transmitted to Pendo's servers in a manner that includes:
+
+Personally Identifiable Information (PII) such as:
+
+Date of Birth (DOB)
+
+Email addresses
+
+Usernames
+
+Account balances
+
+Contextual page data:
+
+Click events that include sensitive field values
+
+HTML snippets from the application
+
+User-selected text within the application interface
+
+The data is being sent in a compressed and encoded format:
+
+zlib-compressed, then
+
+Base64-encoded using a URL-safe variant
+
+While this may obscure the data in transit, it does not constitute encryption or adequate protection, especially considering the information is sent to a third-party service outside the organization’s infrastructure.
+
+Impact:
+PII Leakage: Exposure of sensitive user information to a third party (Pendo), potentially violating privacy policies or regulatory requirements (e.g., GDPR, HIPAA, etc.).
+
+Session Context Disclosure: Capture of selected text and in-page user behavior may result in unintentional data disclosure.
+
+Risk of Data Reconstruction: Since the data is only compressed and encoded, an attacker with access to traffic or logs can easily decode and decompress the data to extract sensitive details.
+
+Trust and Legal Concerns: Could lead to user distrust or legal consequences depending on the nature of the exposed data and applicable compliance standards.
+
+Severity: Critical
+CVSS v3.1 Vector (Example):
+AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N
+Base Score: 9.1 (Critical)
+
+Evidence (example format):
+Click on DOB field → Observed request to data.pendo.io containing compressed+encoded payload → Decoded payload reveals plaintext DOB.
+
+Selected a username or balance text on screen → Captured as part of a Pendo event.
+
+Intercepted HTML snippets showed entire DOM fragments containing sensitive data being sent.
+
+Recommendations:
+Minimize Data Sent to Pendo:
+
+Limit Pendo instrumentation strictly to non-sensitive UI areas.
+
+Avoid including fields with PII or financial data in tracked events or HTML snapshots.
+
+Disable Text Selection Tracking:
+
+Prevent user-selected content from being captured by Pendo instrumentation scripts.
+
+Sanitize or Mask Sensitive Data:
+
+Implement filters or middleware to redact or obfuscate PII and sensitive content before it is processed by analytics scripts.
+
+Review Third-Party Data Handling Policies:
+
+Ensure third-party tools like Pendo are configured in compliance with your data protection policies and legal obligations.
+
+Conduct Privacy and Security Reviews:
+
+Perform regular audits of third-party integrations for compliance with privacy-by-design principles.
+
+User Consent and Disclosure:
+
+Ensure users are clearly informed about the tracking and data sharing practices, and obtain explicit consent where required by law.
+
